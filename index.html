@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Sheet Processor</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-file-excel"></i> Excel Sheet Processor</h1>
+                <p>Process your Excel files with precision and style</p>
+                <button class="theme-toggle" id="themeToggle">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-container">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <h3>Drag & Drop your Excel file here</h3>
+                        <p>or <span class="browse-link">browse</span> to select</p>
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" hidden>
+                        <div class="file-requirements">
+                            <p><i class="fas fa-info-circle"></i> Required sheets: NetPosition, NerveFInal, CombineNerve</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- File Info Section -->
+            <section class="file-info-section" id="fileInfoSection" style="display: none;">
+                <div class="file-info-card">
+                    <div class="file-details">
+                        <i class="fas fa-file-excel file-icon"></i>
+                        <div class="file-meta">
+                            <h4 id="fileName">No file selected</h4>
+                            <p id="fileSize">0 KB</p>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-primary" id="processBtn" disabled>
+                            <i class="fas fa-cogs"></i> Process File
+                        </button>
+                        <button class="btn btn-secondary" id="clearBtn">
+                            <i class="fas fa-times"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Processing Section -->
+            <section class="processing-section" id="processingSection" style="display: none;">
+                <div class="processing-card">
+                    <h3><i class="fas fa-spinner fa-spin"></i> Processing Your File</h3>
+                    <div class="progress-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">0%</div>
+                    </div>
+                    <div class="processing-steps">
+                        <div class="step" id="step1">
+                            <i class="fas fa-circle-notch"></i>
+                            <span>Processing NetPosition sheet...</span>
+                        </div>
+                        <div class="step" id="step2">
+                            <i class="fas fa-circle-notch"></i>
+                            <span>Processing NerveFInal sheet...</span>
+                        </div>
+                        <div class="step" id="step3">
+                            <i class="fas fa-circle-notch"></i>
+                            <span>Processing CombineNerve sheet...</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <div class="results-card">
+                    <div class="success-header">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>Processing Complete!</h3>
+                        <p>Your files have been generated successfully</p>
+                    </div>
+                    <div class="download-grid">
+                        <div class="download-item">
+                            <div class="download-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="download-info">
+                                <h4>netposition.csv</h4>
+                                <p>NetPosition sheet data</p>
+                            </div>
+                            <button class="btn btn-download" id="downloadNetPosition">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                        <div class="download-item">
+                            <div class="download-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="download-info">
+                                <h4>sampleClientmaster.csv</h4>
+                                <p>Processed NerveFInal data</p>
+                            </div>
+                            <button class="btn btn-download" id="downloadSampleClient">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                        <div class="download-item">
+                            <div class="download-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="download-info">
+                                <h4>MTD.csv</h4>
+                                <p>CombineNerve sheet data</p>
+                            </div>
+                            <button class="btn btn-download" id="downloadMTD">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                    </div>
+                    <div class="results-actions">
+                        <button class="btn btn-primary" id="processAnotherBtn">
+                            <i class="fas fa-plus"></i> Process Another File
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>&copy; 2025 Excel Sheet Processor. Built with precision and care.</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
