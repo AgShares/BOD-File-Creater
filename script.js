@@ -204,7 +204,7 @@ class ExcelProcessor {
         const range = XLSX.utils.decode_range(sheet['!ref']);
         const data = [];
         
-        // Process NetPosition with proper numeric formatting for the last column
+        // Process NetPosition with proper numeric formatting and handle zero values
         for (let row = range.s.r; row <= range.e.r; row++) {
             const rowData = [];
             
@@ -213,33 +213,41 @@ class ExcelProcessor {
                 const cell = sheet[cellAddress];
                 
                 if (cell) {
-                    let value = cell.v || '';
+                    let value = cell.v;
                     
-                    // For the last column, ensure numeric formatting
-                    if (col === range.e.c && typeof value === 'number') {
-                        // Last column - format as number
-                        if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 0.0001) {
-                            value = Math.round(value).toString();
-                        } else {
-                            value = value.toString();
-                        }
+                    // Always preserve zero values as "0" (no empty cells for zeros anywhere)
+                    if (typeof value === 'number' && value === 0) {
+                        value = '0'; // Always output zero as "0"
                     } else if (typeof value === 'number') {
-                        // Other numeric columns - preserve format
-                        if (Math.abs(value) >= 1e10) {
-                            value = value.toFixed(0);
-                        } else if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 0.0001) {
-                            value = Math.round(value).toString();
+                        // For the last column, ensure numeric formatting
+                        if (col === range.e.c) {
+                            // Last column - format as number
+                            if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 0.0001) {
+                                value = Math.round(value).toString();
+                            } else {
+                                value = value.toString();
+                            }
                         } else {
-                            value = value.toString();
+                            // Other numeric columns - preserve format
+                            if (Math.abs(value) >= 1e10) {
+                                value = value.toFixed(0);
+                            } else if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 0.0001) {
+                                value = Math.round(value).toString();
+                            } else {
+                                value = value.toString();
+                            }
                         }
+                    } else if (value === null || value === undefined) {
+                        value = ''; // Handle null/undefined as empty
                     }
                     
                     rowData.push(value);
                 } else {
-                    rowData.push('');
+                    rowData.push(''); // Empty cell
                 }
             }
             
+            // Always add the row (don't skip entire rows)
             data.push(rowData);
         }
         
