@@ -303,23 +303,52 @@ class ExcelProcessor {
                 const cell = sheet[cellAddress];
                 
                 if (cell) {
-                    // Try to get the raw value first, then formatted value, then computed value
-                    let value = cell.w || cell.v || '';
+                    // Get the cell value
+                    let value = cell.v;
                     
-                    // If the raw value is a number in scientific notation, convert it properly
-                    if (typeof value === 'string' && value.includes('E')) {
-                        // Try to parse as number and convert to fixed notation
-                        const num = parseFloat(value);
-                        if (!isNaN(num)) {
-                            value = num.toFixed(0);
-                        }
-                    } else if (typeof value === 'number') {
-                        // If it's a number, format it properly
-                        if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 0.0001) {
-                            value = Math.round(value).toString();
+                    // Track column B specifically (column index 1)
+                    const isColumnB = col === 1;
+                    
+                    // For column B, try to get the formatted/displayed value first but keep as number
+                    if (isColumnB) {
+                        // For column B, we ALWAYS want it as a whole number (no decimals)
+                        if (typeof cell.v === 'number') {
+                            // Convert to integer (whole number with zero decimal places)
+                            value = Math.round(cell.v);
+                            console.log('Column B - Converting to integer:', cell.v, 'to:', value);
+                        } else if (typeof cell.v === 'string' && !isNaN(parseFloat(cell.v))) {
+                            // If it's a string number, convert to integer
+                            value = Math.round(parseFloat(cell.v));
+                            console.log('Column B - Converting string to integer:', cell.v, 'to:', value);
                         } else {
-                            value = value.toString();
+                            // For non-numeric values, keep as-is
+                            value = cell.v;
+                            console.log('Column B - Non-numeric value:', value);
                         }
+                    } else {
+                        // For other columns, handle normally
+                        // Try to get the raw value first, then formatted value, then computed value
+                        value = cell.w || cell.v || '';
+                        
+                        // If the raw value is a number in scientific notation, convert it properly
+                        if (typeof value === 'string' && value.includes('E')) {
+                            // Try to parse as number and convert to fixed notation
+                            const num = parseFloat(value);
+                            if (!isNaN(num)) {
+                                value = num.toFixed(0);
+                            }
+                        } else if (typeof value === 'number') {
+                            // If it's a number, format it properly
+                            if (Number.isInteger(value) || Math.abs(value - Math.round(value)) < 0.0001) {
+                                value = Math.round(value).toString();
+                            } else {
+                                value = value.toString();
+                            }
+                        }
+                    }
+                    
+                    if (isColumnB) {
+                        console.log('Column B - Final value:', value, 'Type:', typeof value);
                     }
                     
                     rowData.push(value);
@@ -438,10 +467,69 @@ class ExcelProcessor {
         return String(value);
     }
 
+    // Helper function to format numbers without scientific notation
+    formatNumberToString(num) {
+        if (typeof num !== 'number') return num;
+        
+        // Handle zero
+        if (num === 0) return '0';
+        
+        // For integers or numbers very close to integers
+        if (Number.isInteger(num) || Math.abs(num - Math.round(num)) < 0.0001) {
+            // Use BigInt for very large numbers to avoid scientific notation
+            if (Math.abs(num) >= 1e15) {
+                try {
+                    return BigInt(Math.round(num)).toString();
+                } catch (e) {
+                    return num.toFixed(0);
+                }
+            } else {
+                return Math.round(num).toString();
+            }
+        }
+        
+        // For decimal numbers
+        return num.toString();
+    }
+
     arrayToCSV(data) {
-        return data.map(row => 
-            row.map(cell => {
-                const value = cell === null || cell === undefined ? '' : String(cell);
+        return data.map((row, rowIndex) => 
+            row.map((cell, colIndex) => {
+                if (cell === null || cell === undefined) {
+                    return '';
+                }
+                
+                // Special handling for column B (index 1) - ALWAYS treat as integer number
+                if (colIndex === 1) {
+                    // For column B, ALWAYS format as integer (zero decimal places)
+                    if (typeof cell === 'number') {
+                        // Convert to integer and format as string
+                        const integerValue = Math.round(cell);
+                        const value = integerValue.toString();
+                        console.log('CSV - Column B integer formatting:', cell, 'to integer:', integerValue, 'to string:', value);
+                        return value;
+                    } else if (typeof cell === 'string' && !isNaN(parseFloat(cell))) {
+                        // If it's a string number, convert to integer
+                        const integerValue = Math.round(parseFloat(cell));
+                        const value = integerValue.toString();
+                        console.log('CSV - Column B string to integer:', cell, 'to integer:', integerValue, 'to string:', value);
+                        return value;
+                    } else {
+                        // For non-numbers in column B, use as-is
+                        const value = String(cell);
+                        console.log('CSV - Column B non-numeric preserving:', value);
+                        
+                        // Only escape if it contains special characters
+                        if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                            return '"' + value.replace(/"/g, '""') + '"';
+                        }
+                        return value;
+                    }
+                }
+                
+                // For other columns, handle normally
+                const value = String(cell);
+                
                 // Escape quotes and wrap in quotes if contains comma, quote, or newline
                 if (value.includes(',') || value.includes('"') || value.includes('\n')) {
                     return '"' + value.replace(/"/g, '""') + '"';
